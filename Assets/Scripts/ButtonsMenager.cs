@@ -6,9 +6,10 @@ using UnityEngine.UI;
 
 public class ButtonsMenager : MonoBehaviour
 {
-    [SerializeField] private GameObject _panel;
-    [SerializeField] private Animator _kyleAnimator;
+    [SerializeField] private GameObject _mainMenu;
+
     [SerializeField] private GameObject _wordTable;
+    [SerializeField] private GameObject _addListTable;
 
     [SerializeField] private TMP_InputField _inputEnglishWord;
     [SerializeField] private TMP_InputField _inputTurkishWord;
@@ -18,29 +19,71 @@ public class ButtonsMenager : MonoBehaviour
 
     [SerializeField] private Button _spinTurkish;
     [SerializeField] private Button _spinEnglish;
+    [SerializeField] private Button _listTableButton;
+    [SerializeField] private Button _getWordbutton;
 
 
 
 
     public List<string> WordList = new List<string>();
+    private int SavedListCount;
 
 
     private System.Random random = new System.Random();
 
     private int previousRandomIndex = -1;
 
+
+    private void Start()
+    {
+        LoadList();
+    }
+
     private void Update()
     {
+        if (_mainMenu.activeInHierarchy)
+        {
+            _spinTurkish.gameObject.SetActive(false);
+            _spinEnglish.gameObject.SetActive(false);
+            _listTableButton.gameObject.SetActive(false);
+            _getWordbutton.gameObject.SetActive(false);
+            _wordTable.SetActive(false);
+
+        }
+        else
+        {
+            _spinTurkish.gameObject.SetActive(true);
+            _listTableButton.gameObject.SetActive(true);
+            _getWordbutton.gameObject.SetActive(true);
+            _wordTable.SetActive(true);
+        }
+
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            _panel.SetActive(true);
+
+
+            if (_addListTable.activeInHierarchy)
+            {
+                _addListTable.gameObject.SetActive(false);
+
+            }
+
+            else
+            {
+
+                _mainMenu.SetActive(true);
+            }
+
+
         }
     }
 
     public void Click_Play()
     {
-        _panel.SetActive(false);
-        _kyleAnimator.SetBool("idle", true);
+
+        _mainMenu.SetActive(false);
+     
     }
 
     public void Save_Button()
@@ -54,10 +97,17 @@ public class ButtonsMenager : MonoBehaviour
             WordList.Add(englishWord);
             WordList.Add(turkishWord);
 
-            _kyleAnimator.SetBool("turn", true);
+
 
             _inputEnglishWord.text = "";
             _inputTurkishWord.text = "";
+
+            for (int i = 0; i < WordList.Count; i++)
+            {
+                PlayerPrefs.SetString("words" + i, WordList[i]);
+            }
+
+            PlayerPrefs.SetInt("count", WordList.Count);
         }
         else
         {
@@ -65,19 +115,35 @@ public class ButtonsMenager : MonoBehaviour
         }
 
     }
+    public void LoadList()
+    {
+        WordList.Clear();
+        SavedListCount = PlayerPrefs.GetInt("count");
 
+        for (int i = 0; i < SavedListCount; i++)
+        {
+            string kelimeler = PlayerPrefs.GetString("words" + i);
+            WordList.Add(kelimeler);
+        }
+
+    }
     public void Spin_Turkish()
     {
-        _spinEnglish.gameObject.SetActive(true);
-        _wordTable.transform.DORotate(new Vector3(0, 245, 0), 3f);
-        _spinTurkish.gameObject.SetActive(false);
+
+        if (!_mainMenu.activeInHierarchy)
+        {
+            _spinEnglish.gameObject.SetActive(true);
+        
+        }
+        _wordTable.transform.DORotate(new Vector3(15, 245, 0), 1.2f);
+
     }
 
     public void Spin_English()
     {
-        _spinTurkish.gameObject.SetActive(true);
-        _wordTable.transform.DORotate(new Vector3(0, 65, 0), 1.2f);
         _spinEnglish.gameObject.SetActive(false);
+        _wordTable.transform.DORotate(new Vector3(-10, 65, 0), 1.2f);
+      
     }
 
     public void Get_Word_Button()
@@ -97,13 +163,21 @@ public class ButtonsMenager : MonoBehaviour
             _tableEnglishText.text = WordList[randomIndex];
             _tableTurkishText.text = WordList[randomIndex + 1];
 
-            // Şu anki rastgele sayıyı sakla
             previousRandomIndex = randomIndex;
+
+            
         }
         else
         {
             Debug.LogError("Words listesinde yeterince eleman yok.");
         }
+    }
+
+    public void AddListButton()
+    {
+
+        _addListTable.SetActive(true);
+
     }
 }
 
